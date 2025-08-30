@@ -1,0 +1,79 @@
+
+openapi: 3.1.0
+info:
+  title: MarketInfraLab API
+  version: "1.0.0"
+  description: |
+    Read-only endpoints for simulated market data and latency tests.
+    Implement behind your domain and wire it as a Custom Action.
+servers:
+  - url: https://api.your-domain.example
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+security:
+  - ApiKeyAuth: []
+paths:
+  /ping:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+  /latency:
+    get:
+      summary: Measure echo latency from the Action call path
+      parameters:
+        - name: bytes
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 32768 }
+          required: false
+      responses:
+        "200":
+          description: Round-trip statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rtt_ms: { type: number }
+                  server_time_utc: { type: string }
+  /book:
+    get:
+      summary: Return a tiny top-of-book snapshot (simulated)
+      parameters:
+        - name: symbol
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Best bid/ask snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  symbol: { type: string }
+                  ts_utc: { type: string }
+                  bid_px: { type: number }
+                  bid_sz: { type: number }
+                  ask_px: { type: number }
+                  ask_sz: { type: number }
+  /ptp/status:
+    get:
+      summary: PTP grandmaster/slave status (simulated)
+      responses:
+        "200":
+          description: Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offset_ns: { type: integer }
+                  freq_ppb: { type: number }
+                  holdover: { type: boolean }
